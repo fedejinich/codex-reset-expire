@@ -82,7 +82,7 @@ final class StatusBarController: NSObject {
                 store: store,
                 actions: PopoverActions(
                     refresh: { [weak self] in self?.store.refresh() },
-                    openCodex: { Self.openCodexAnalytics() },
+                    openCodex: { AppLinks.openCodexAnalytics() },
                     hide: { [weak self] in self?.hideApp() },
                     quit: { NSApplication.shared.terminate(nil) }
                 )
@@ -145,9 +145,4 @@ final class StatusBarController: NSObject {
         NSApp.hide(nil)
     }
 
-    private static func openCodexAnalytics() {
-        if let url = URL(string: "https://chatgpt.com/codex/cloud/settings/analytics#usage") {
-            NSWorkspace.shared.open(url)
-        }
-    }
 }

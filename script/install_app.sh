@@ -14,6 +14,6 @@ cd "$ROOT_DIR"
 pkill -x "$APP_NAME" >/dev/null 2>&1 || true
 rm -rf "$TARGET_APP"
 /usr/bin/ditto "$SOURCE_APP" "$TARGET_APP"
-/usr/bin/open -n "$TARGET_APP"
+/usr/bin/open "$TARGET_APP"
 
 echo "Installed $DISPLAY_NAME to $TARGET_APP"
