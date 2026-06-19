@@ -16,13 +16,13 @@ struct PopoverView: View {
     var body: some View {
         TimelineView(.periodic(from: Date(), by: 60)) { context in
             content(now: context.date)
-                .frame(width: 372)
+                .frame(width: 316)
                 .background(.regularMaterial)
         }
     }
 
     private func content(now: Date) -> some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: 10) {
             header
 
             hero(now: now)
@@ -31,20 +31,20 @@ struct PopoverView: View {
 
             footer
         }
-        .padding(18)
+        .padding(12)
     }
 
     private var header: some View {
-        HStack(spacing: 10) {
-            Image(systemName: "arrow.triangle.2.circlepath.circle.fill")
-                .font(.system(size: 18, weight: .semibold))
+        HStack(spacing: 8) {
+            Image(systemName: "arrow.clockwise.circle.fill")
+                .font(.system(size: 15, weight: .semibold))
                 .foregroundStyle(.tint)
 
             VStack(alignment: .leading, spacing: 1) {
                 Text("Codex resets")
-                    .font(.system(size: 15, weight: .semibold))
+                    .font(.system(size: 13, weight: .semibold))
                 Text(lastUpdatedText)
-                    .font(.system(size: 11))
+                    .font(.system(size: 10))
                     .foregroundStyle(.secondary)
             }
 
@@ -63,16 +63,17 @@ struct PopoverView: View {
         let nextExpiration = snapshot?.nextExpiringCredit?.expiresAt
         let heroTone = nextExpiration.map { tone(for: $0, now: now) } ?? StatusPill.Tone.neutral
 
-        return HStack(alignment: .bottom) {
-            VStack(alignment: .leading, spacing: 4) {
+        return HStack(alignment: .center, spacing: 10) {
+            VStack(alignment: .leading, spacing: 2) {
                 Text("\(credits.count)")
-                    .font(.system(size: 48, weight: .bold, design: .rounded))
+                    .font(.system(size: 38, weight: .bold, design: .rounded))
                     .monospacedDigit()
                     .foregroundStyle(heroTone == .neutral ? Color.primary : heroTone.color)
                 Text(credits.count == 1 ? "available reset credit" : "available reset credits")
-                    .font(.system(size: 13, weight: .medium))
+                    .font(.system(size: 12, weight: .medium))
                     .foregroundStyle(.secondary)
             }
+            .layoutPriority(1)
 
             Spacer()
 
@@ -82,25 +83,23 @@ struct PopoverView: View {
                     systemImage: "timer",
                     tone: tone(for: nextExpiration, now: now)
                 )
-                .padding(.bottom, 8)
             } else {
                 StatusPill(text: "no resets", systemImage: "minus.circle", tone: .neutral)
-                    .padding(.bottom, 8)
             }
         }
-        .padding(16)
+        .padding(12)
         .background {
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
                 .fill(.thinMaterial)
                 .overlay(alignment: .topLeading) {
-                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
                         .fill(heroAccent.opacity(0.11))
-                        .frame(height: 58)
-                        .blur(radius: 12)
+                        .frame(height: 42)
+                        .blur(radius: 8)
                         .clipped()
                 }
                 .overlay {
-                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
                         .strokeBorder(heroAccent.opacity(0.18))
                 }
         }
@@ -110,12 +109,12 @@ struct PopoverView: View {
     private func creditList(now: Date) -> some View {
         if let failure = failureText {
             Text(failure)
-                .font(.system(size: 12, weight: .medium))
+                .font(.system(size: 11, weight: .medium))
                 .foregroundStyle(.secondary)
-                .padding(12)
+                .padding(10)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .background {
-                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    RoundedRectangle(cornerRadius: 10, style: .continuous)
                         .fill(.red.opacity(0.09))
                 }
         }
@@ -124,7 +123,7 @@ struct PopoverView: View {
         if credits.isEmpty {
             emptyState
         } else {
-            VStack(spacing: 8) {
+            VStack(spacing: 6) {
                 ForEach(credits) { credit in
                     ResetCreditRowView(credit: credit, now: now)
                 }
@@ -133,23 +132,23 @@ struct PopoverView: View {
     }
 
     private var emptyState: some View {
-        HStack(spacing: 10) {
+        HStack(spacing: 8) {
             Image(systemName: "circle.dashed")
                 .foregroundStyle(.secondary)
             Text("No reset credits available")
-                .font(.system(size: 13, weight: .medium))
+                .font(.system(size: 12, weight: .medium))
                 .foregroundStyle(.secondary)
             Spacer()
         }
-        .padding(14)
+        .padding(10)
         .background {
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .fill(.quaternary.opacity(0.5))
+            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                .fill(.quaternary.opacity(0.4))
         }
     }
 
     private var footer: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: 6) {
             Button(action: actions.refresh) {
                 Label("Refresh", systemImage: "arrow.clockwise")
             }

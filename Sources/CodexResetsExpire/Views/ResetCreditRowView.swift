@@ -7,29 +7,30 @@ struct ResetCreditRowView: View {
     private let countdownFormatter = CountdownFormatter()
 
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: 8) {
             ZStack {
                 Circle()
                     .fill(tone.color.opacity(0.14))
-                    .frame(width: 34, height: 34)
+                    .frame(width: 28, height: 28)
                 Image(systemName: iconName)
-                    .font(.system(size: 14, weight: .semibold))
+                    .font(.system(size: 12, weight: .semibold))
                     .foregroundStyle(tone.color)
             }
 
-            VStack(alignment: .leading, spacing: 3) {
+            VStack(alignment: .leading, spacing: 2) {
                 Text(credit.title.isEmpty ? "Reset credit" : credit.title)
-                    .font(.system(size: 13, weight: .semibold))
+                    .font(.system(size: 12, weight: .semibold))
                     .foregroundStyle(.primary)
                     .lineLimit(1)
 
                 Text(detailText)
-                    .font(.system(size: 11))
+                    .font(.system(size: 10))
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
             }
+            .layoutPriority(1)
 
-            Spacer(minLength: 10)
+            Spacer(minLength: 6)
 
             StatusPill(
                 text: countdownFormatter.string(from: now, to: credit.expiresAt),
@@ -37,13 +38,14 @@ struct ResetCreditRowView: View {
                 tone: tone
             )
         }
-        .padding(12)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 9)
         .background {
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .fill(.quaternary.opacity(0.55))
+            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                .fill(.quaternary.opacity(0.48))
                 .overlay {
-                    RoundedRectangle(cornerRadius: 12, style: .continuous)
-                        .strokeBorder(tone.color.opacity(0.16))
+                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                        .strokeBorder(tone.color.opacity(0.14))
                 }
         }
         .accessibilityElement(children: .combine)

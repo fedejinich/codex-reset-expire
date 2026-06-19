@@ -15,7 +15,7 @@ final class StatusBarController: NSObject {
 
     init(store: ResetCreditsStore) {
         self.store = store
-        statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
+        statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
         popover = NSPopover()
         super.init()
 
@@ -40,6 +40,12 @@ final class StatusBarController: NSObject {
             name: NSWorkspace.didWakeNotification,
             object: nil
         )
+        DistributedNotificationCenter.default().addObserver(
+            self,
+            selector: #selector(handleShowPopoverNotification),
+            name: AppNotifications.showPopover,
+            object: AppNotifications.bundleIdentifier
+        )
     }
 
     func stop() {
@@ -52,6 +58,7 @@ final class StatusBarController: NSObject {
         refreshTimer = nil
         cancellables.removeAll()
         NSWorkspace.shared.notificationCenter.removeObserver(self)
+        DistributedNotificationCenter.default().removeObserver(self)
         closePopover()
         NSStatusBar.system.removeStatusItem(statusItem)
     }
@@ -61,12 +68,9 @@ final class StatusBarController: NSObject {
             return
         }
 
-        button.image = NSImage(
-            systemSymbolName: "arrow.triangle.2.circlepath.circle.fill",
-            accessibilityDescription: "Codex Resets"
-        )
+        button.image = menuBarImage()
         button.image?.isTemplate = true
-        button.imagePosition = .imageLeading
+        button.imagePosition = .imageOnly
         button.target = self
         button.action = #selector(togglePopover)
         button.toolTip = store.tooltip()
@@ -76,7 +80,7 @@ final class StatusBarController: NSObject {
     private func configurePopover() {
         popover.behavior = .transient
         popover.animates = true
-        popover.contentSize = NSSize(width: 372, height: 420)
+        popover.contentSize = NSSize(width: 320, height: 340)
         popover.contentViewController = NSHostingController(
             rootView: PopoverView(
                 store: store,
@@ -104,13 +108,20 @@ final class StatusBarController: NSObject {
             return
         }
 
-        button.title = " Codex \(store.statusTitle())"
+        button.title = ""
         button.toolTip = store.tooltip()
-        button.image = NSImage(
-            systemSymbolName: store.statusSymbolName(),
-            accessibilityDescription: "Codex Resets"
-        )
+        button.image = menuBarImage()
         button.image?.isTemplate = true
+    }
+
+    private func menuBarImage() -> NSImage? {
+        NSImage(
+            systemSymbolName: "arrow.clockwise.circle.fill",
+            accessibilityDescription: "Codex reset credits"
+        ) ?? NSImage(
+            systemSymbolName: "arrow.triangle.2.circlepath.circle.fill",
+            accessibilityDescription: "Codex reset credits"
+        )
     }
 
     @objc
@@ -127,7 +138,12 @@ final class StatusBarController: NSObject {
         store.refresh()
     }
 
-    private func showPopover() {
+    @objc
+    private func handleShowPopoverNotification() {
+        showPopover()
+    }
+
+    func showPopover() {
         guard let button = statusItem.button else {
             return
         }

@@ -1,30 +1,62 @@
 # Codex Resets Expire
 
-Native macOS menu bar utility for checking Codex rate-limit reset credits and their expiration times.
+Native macOS menu-bar app for checking Codex reset credits and expiration times.
 
-The app reads `~/.codex/auth.json`, calls the Codex reset-credit endpoint with the local ChatGPT token, and displays only parsed reset-credit metadata. It does not store tokens.
+It reads `~/.codex/auth.json`, uses the local ChatGPT access token and account
+ID to call the Codex reset-credit endpoint, and renders the parsed credit
+metadata in a status-item popover. It does not store tokens.
 
-After launch, the app opens a small native dashboard. Closing that window keeps the app running in the background. You can also look for `Codex <count>` in the macOS menu bar, unless a menu-bar manager hides new items.
+- **Menu bar**: provides a native status item that opens the reset-credit
+  popover.
+- **Refresh**: fetches credit state from
+  `https://chatgpt.com/backend-api/wham/rate-limit-reset-credits`.
+- **Expiration view**: lists parsed reset credits and their expiry status.
+- **Fallback display**: keeps the last parsed credit snapshot for display after
+  refresh failures.
+- **Native app bundle**: builds and stages a menu-bar-only macOS app.
 
-## Build And Run
+## Install
 
-```bash
+```sh
+./script/install_app.sh
+```
+
+This builds the app, verifies it launches, installs it to
+`/Applications/Codex Resets.app`, and opens it.
+
+## Run
+
+```sh
 ./script/build_and_run.sh
 ```
 
-The script builds the SwiftPM executable, stages `dist/CodexResetsExpire.app`, and launches it as a menu-bar-only app.
+This builds the SwiftPM executable, stages `dist/CodexResetsExpire.app`, and
+launches it as a menu-bar-only app.
 
 ## Verify
 
-```bash
+```sh
 swift test
 ./script/build_and_run.sh --verify
 ```
 
-## Install To Applications
+The verification script launches the staged app and checks that the
+`CodexResetsExpire` process is running.
 
-```bash
-./script/install_app.sh
+## Development
+
+```sh
+swift build
+swift test
+./script/build_and_run.sh --logs
 ```
 
-This installs the staged app bundle to `/Applications/Codex Resets.app` and opens it.
+The package targets macOS 14 and uses SwiftPM. The app reads credentials from
+the local Codex auth file at runtime; tests use fixtures and temporary files.
+
+## Boundaries
+
+This app is only for viewing Codex reset-credit metadata from the menu bar.
+
+It does not redeem reset credits, modify Codex account state, store access
+tokens, manage multiple accounts, or provide a Dock-oriented app workflow.

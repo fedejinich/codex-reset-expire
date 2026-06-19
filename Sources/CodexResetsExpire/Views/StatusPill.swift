@@ -27,17 +27,17 @@ struct StatusPill: View {
 
     var body: some View {
         Label(text, systemImage: systemImage)
-            .font(.system(size: 11, weight: .semibold, design: .rounded))
+            .font(.system(size: 10, weight: .semibold, design: .rounded))
             .foregroundStyle(tone.color)
             .labelStyle(.titleAndIcon)
-            .padding(.horizontal, 9)
-            .padding(.vertical, 5)
+            .padding(.horizontal, 7)
+            .padding(.vertical, 4)
             .background {
                 Capsule()
-                    .fill(tone.color.opacity(0.14))
+                    .fill(tone.color.opacity(0.13))
                     .overlay {
                         Capsule()
-                            .strokeBorder(tone.color.opacity(0.24), lineWidth: 1)
+                            .strokeBorder(tone.color.opacity(0.22), lineWidth: 1)
                     }
             }
     }
