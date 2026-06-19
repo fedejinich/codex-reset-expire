@@ -4,6 +4,8 @@ Native macOS menu bar utility for checking Codex rate-limit reset credits and th
 
 The app reads `~/.codex/auth.json`, calls the Codex reset-credit endpoint with the local ChatGPT token, and displays only parsed reset-credit metadata. It does not store tokens.
 
+After launch, look for `Codex <count>` in the macOS menu bar. The app is menu-bar-only, so it does not show in the Dock or Cmd-Tab.
+
 ## Build And Run
 
 ```bash

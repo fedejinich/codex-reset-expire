@@ -104,21 +104,13 @@ final class StatusBarController: NSObject {
             return
         }
 
-        button.title = statusTitle()
+        button.title = " Codex \(store.statusTitle())"
         button.toolTip = store.tooltip()
         button.image = NSImage(
             systemSymbolName: store.statusSymbolName(),
             accessibilityDescription: "Codex Resets"
         )
         button.image?.isTemplate = true
-    }
-
-    private func statusTitle() -> String {
-        guard let snapshot = store.currentSnapshot else {
-            return store.isLoading ? "..." : "0"
-        }
-
-        return "\(snapshot.totalAvailableCredits)"
     }
 
     @objc
