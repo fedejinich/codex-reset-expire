@@ -4,6 +4,12 @@ struct ResetCreditRowView: View {
     var credit: ResetCredit
     var now: Date
 
+    private static let dateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "d MMM"
+        return formatter
+    }()
+
     private let countdownFormatter = CountdownFormatter()
 
     var body: some View {
@@ -14,7 +20,7 @@ struct ResetCreditRowView: View {
                 .frame(width: 17, height: 17)
 
             VStack(alignment: .leading, spacing: 1) {
-                Text(credit.title.isEmpty ? "Reset credit" : credit.title)
+                Text("Reset credit")
                     .font(.system(size: 11, weight: .semibold))
                     .foregroundStyle(.primary)
                     .lineLimit(1)
@@ -33,7 +39,7 @@ struct ResetCreditRowView: View {
             )
         }
         .padding(.horizontal, 10)
-        .padding(.vertical, 7)
+        .padding(.vertical, 8)
         .accessibilityElement(children: .combine)
     }
 
@@ -63,20 +69,14 @@ struct ResetCreditRowView: View {
     }
 
     private var detailText: String {
-        let type = credit.resetType
-            .replacingOccurrences(of: "_", with: " ")
-            .capitalized
-
         if credit.isAvailable {
-            return type.isEmpty ? "Available" : type
+            return "expires \(Self.dateFormatter.string(from: credit.expiresAt))"
         }
 
         let status = credit.status
             .replacingOccurrences(of: "_", with: " ")
             .capitalized
 
-        return [status, type]
-            .filter { !$0.isEmpty }
-            .joined(separator: " · ")
+        return status.isEmpty ? "used" : status
     }
 }

@@ -11,13 +11,24 @@ struct PopoverView: View {
     @ObservedObject var store: ResetCreditsStore
     var actions: PopoverActions
 
+    private static let timeFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "HH:mm"
+        return formatter
+    }()
+
     private let countdownFormatter = CountdownFormatter()
 
     var body: some View {
         TimelineView(.periodic(from: Date(), by: 60)) { context in
             content(now: context.date)
-                .frame(width: 276)
-                .background(.regularMaterial)
+                .frame(width: 304, height: 206)
+                .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+                .overlay {
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .strokeBorder(Color.primary.opacity(0.10), lineWidth: 1)
+                }
+                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
         }
     }
 
@@ -25,22 +36,19 @@ struct PopoverView: View {
         VStack(spacing: 0) {
             header
 
-            Divider()
-
             summary(now: now)
 
             Divider()
+                .opacity(0.45)
 
             creditList(now: now)
 
+            Spacer(minLength: 0)
+
             Divider()
+                .opacity(0.45)
 
             footer
-        }
-        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-        .overlay {
-            RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .strokeBorder(.white.opacity(0.12))
         }
     }
 
@@ -64,8 +72,9 @@ struct PopoverView: View {
                     .foregroundStyle(.secondary)
             }
         }
-        .padding(.horizontal, 10)
-        .padding(.vertical, 8)
+        .padding(.horizontal, 12)
+        .padding(.top, 10)
+        .padding(.bottom, 6)
     }
 
     private func summary(now: Date) -> some View {
@@ -73,14 +82,14 @@ struct PopoverView: View {
         let nextExpiration = store.currentSnapshot?.nextExpiringCredit?.expiresAt
         let summaryTone = nextExpiration.map { tone(for: $0, now: now) } ?? StatusPill.Tone.neutral
 
-        return HStack(spacing: 8) {
+        return HStack(alignment: .firstTextBaseline, spacing: 8) {
             Text("\(credits.count)")
-                .font(.system(size: 28, weight: .bold, design: .rounded))
+                .font(.system(size: 32, weight: .bold, design: .rounded))
                 .monospacedDigit()
                 .foregroundStyle(summaryTone == .neutral ? Color.primary : summaryTone.color)
 
-            Text(credits.count == 1 ? "reset available" : "resets available")
-                .font(.system(size: 11, weight: .medium))
+            Text(credits.count == 1 ? "reset" : "resets")
+                .font(.system(size: 12, weight: .semibold))
                 .foregroundStyle(.secondary)
 
             Spacer(minLength: 8)
@@ -93,8 +102,8 @@ struct PopoverView: View {
                 )
             }
         }
-        .padding(.horizontal, 10)
-        .padding(.vertical, 8)
+        .padding(.horizontal, 12)
+        .padding(.bottom, 9)
         .background(summaryTone.color.opacity(0.055))
     }
 
@@ -105,19 +114,18 @@ struct PopoverView: View {
                 .font(.system(size: 10, weight: .medium))
                 .foregroundStyle(.secondary)
                 .lineLimit(2)
-                .padding(10)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 9)
                 .frame(maxWidth: .infinity, alignment: .leading)
-        }
-
-        let credits = listedCredits
-        if credits.isEmpty {
+        } else if listedCredits.isEmpty {
             emptyState
         } else {
             VStack(spacing: 0) {
-                ForEach(Array(credits.enumerated()), id: \.element.id) { index, credit in
+                ForEach(Array(listedCredits.prefix(3).enumerated()), id: \.element.id) { index, credit in
                     if index > 0 {
                         Divider()
                             .padding(.leading, 34)
+                            .opacity(0.35)
                     }
 
                     ResetCreditRowView(credit: credit, now: now)
@@ -135,12 +143,12 @@ struct PopoverView: View {
                 .foregroundStyle(.secondary)
             Spacer()
         }
-        .padding(.horizontal, 10)
-        .padding(.vertical, 9)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 11)
     }
 
     private var footer: some View {
-        HStack(spacing: 10) {
+        HStack(spacing: 11) {
             Button(action: actions.refresh) {
                 Image(systemName: "arrow.clockwise")
             }
@@ -168,15 +176,15 @@ struct PopoverView: View {
         .controlSize(.mini)
         .font(.system(size: 11, weight: .semibold))
         .foregroundStyle(.secondary)
-        .padding(.horizontal, 10)
-        .padding(.vertical, 7)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 8)
     }
 
     private var lastUpdatedText: String {
         guard let snapshot = store.currentSnapshot else {
             return "not updated"
         }
-        return DateFormatters.localDateString(for: snapshot.fetchedAt)
+        return Self.timeFormatter.string(from: snapshot.fetchedAt)
     }
 
     private var failureText: String? {

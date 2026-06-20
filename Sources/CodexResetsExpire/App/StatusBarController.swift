@@ -5,7 +5,7 @@ import SwiftUI
 @MainActor
 final class StatusBarController: NSObject {
     private static let refreshInterval: TimeInterval = 30 * 60
-    private static let panelWidth: CGFloat = 276
+    private static let panelSize = NSSize(width: 304, height: 206)
 
     private let store: ResetCreditsStore
     private let statusItem: NSStatusItem
@@ -92,10 +92,10 @@ final class StatusBarController: NSObject {
                 )
             )
         )
-        hostingController.view.frame = NSRect(x: 0, y: 0, width: Self.panelWidth, height: 1)
+        hostingController.view.frame = NSRect(origin: .zero, size: Self.panelSize)
 
         let panel = MenuBarDropdownPanel(
-            contentRect: NSRect(x: 0, y: 0, width: Self.panelWidth, height: 1),
+            contentRect: NSRect(origin: .zero, size: Self.panelSize),
             styleMask: [.borderless, .fullSizeContentView],
             backing: .buffered,
             defer: false
@@ -178,11 +178,11 @@ final class StatusBarController: NSObject {
     }
 
     private func positionPanel(relativeTo button: NSStatusBarButton) {
-        guard let panel, let hostingController = hostingController else {
+        guard let panel else {
             return
         }
 
-        let contentSize = fittedPanelSize(hostingController: hostingController)
+        let contentSize = Self.panelSize
         let buttonFrame = button.window?.convertToScreen(button.convert(button.bounds, to: nil)) ?? .zero
         let screen = button.window?.screen ?? NSScreen.main
         let visibleFrame = screen?.visibleFrame ?? NSScreen.main?.visibleFrame ?? .zero
@@ -191,18 +191,9 @@ final class StatusBarController: NSObject {
             max(buttonFrame.midX - contentSize.width / 2, visibleFrame.minX + 8),
             visibleFrame.maxX - contentSize.width - 8
         )
-        let y = buttonFrame.minY - contentSize.height
+        let y = visibleFrame.maxY - contentSize.height
 
         panel.setFrame(NSRect(origin: NSPoint(x: x, y: y), size: contentSize), display: true)
-    }
-
-    private func fittedPanelSize(hostingController: NSHostingController<PopoverView>) -> NSSize {
-        hostingController.view.frame = NSRect(x: 0, y: 0, width: Self.panelWidth, height: 1)
-        let fittingSize = hostingController.view.fittingSize
-        return NSSize(
-            width: Self.panelWidth,
-            height: min(max(ceil(fittingSize.height), 172), 290)
-        )
     }
 
     private func installEventMonitors() {
