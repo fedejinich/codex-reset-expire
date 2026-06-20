@@ -7,47 +7,33 @@ struct ResetCreditRowView: View {
     private let countdownFormatter = CountdownFormatter()
 
     var body: some View {
-        HStack(spacing: 8) {
-            ZStack {
-                Circle()
-                    .fill(tone.color.opacity(0.14))
-                    .frame(width: 28, height: 28)
-                Image(systemName: iconName)
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundStyle(tone.color)
-            }
+        HStack(spacing: 7) {
+            Image(systemName: iconName)
+                .font(.system(size: 11, weight: .semibold))
+                .foregroundStyle(tone.color)
+                .frame(width: 17, height: 17)
 
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: 1) {
                 Text(credit.title.isEmpty ? "Reset credit" : credit.title)
-                    .font(.system(size: 12, weight: .semibold))
+                    .font(.system(size: 11, weight: .semibold))
                     .foregroundStyle(.primary)
                     .lineLimit(1)
 
                 Text(detailText)
-                    .font(.system(size: 10))
+                    .font(.system(size: 9))
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
             }
-            .layoutPriority(1)
-
-            Spacer(minLength: 6)
+            .frame(maxWidth: .infinity, alignment: .leading)
 
             StatusPill(
                 text: countdownFormatter.string(from: now, to: credit.expiresAt),
-                systemImage: pillIconName,
+                systemImage: "clock",
                 tone: tone
             )
         }
         .padding(.horizontal, 10)
-        .padding(.vertical, 9)
-        .background {
-            RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .fill(.quaternary.opacity(0.48))
-                .overlay {
-                    RoundedRectangle(cornerRadius: 10, style: .continuous)
-                        .strokeBorder(tone.color.opacity(0.14))
-                }
-        }
+        .padding(.vertical, 7)
         .accessibilityElement(children: .combine)
     }
 
@@ -70,31 +56,26 @@ struct ResetCreditRowView: View {
 
     private var iconName: String {
         if !credit.isAvailable {
-            return "checkmark.seal.fill"
+            return "checkmark.circle.fill"
         }
 
-        return remaining <= 86_400 ? "exclamationmark.triangle.fill" : "checkmark.seal.fill"
-    }
-
-    private var pillIconName: String {
-        remaining <= 86_400 ? "timer" : "clock"
+        return remaining <= 86_400 ? "exclamationmark.circle.fill" : "arrow.clockwise.circle.fill"
     }
 
     private var detailText: String {
-        let localDate = DateFormatters.localDateString(for: credit.expiresAt)
         let type = credit.resetType
             .replacingOccurrences(of: "_", with: " ")
             .capitalized
 
         if credit.isAvailable {
-            return type.isEmpty ? "Expires \(localDate)" : "\(type) · Expires \(localDate)"
+            return type.isEmpty ? "Available" : type
         }
 
         let status = credit.status
             .replacingOccurrences(of: "_", with: " ")
             .capitalized
 
-        return [status, type, localDate]
+        return [status, type]
             .filter { !$0.isEmpty }
             .joined(separator: " · ")
     }

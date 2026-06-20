@@ -26,19 +26,26 @@ struct StatusPill: View {
     var tone: Tone
 
     var body: some View {
-        Label(text, systemImage: systemImage)
-            .font(.system(size: 10, weight: .semibold, design: .rounded))
-            .foregroundStyle(tone.color)
-            .labelStyle(.titleAndIcon)
-            .padding(.horizontal, 7)
-            .padding(.vertical, 4)
-            .background {
-                Capsule()
-                    .fill(tone.color.opacity(0.13))
-                    .overlay {
-                        Capsule()
-                            .strokeBorder(tone.color.opacity(0.22), lineWidth: 1)
-                    }
-            }
+        HStack(spacing: 3) {
+            Image(systemName: systemImage)
+                .font(.system(size: 8, weight: .bold))
+
+            Text(text)
+                .font(.system(size: 9, weight: .semibold, design: .rounded))
+                .lineLimit(1)
+                .monospacedDigit()
+        }
+        .foregroundStyle(tone.color)
+        .padding(.horizontal, 6)
+        .padding(.vertical, 3)
+        .fixedSize(horizontal: true, vertical: false)
+        .background {
+            Capsule()
+                .fill(tone.color.opacity(0.10))
+                .overlay {
+                    Capsule()
+                        .strokeBorder(tone.color.opacity(0.18), lineWidth: 1)
+                }
+        }
     }
 }

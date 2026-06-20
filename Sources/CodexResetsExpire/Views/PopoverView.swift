@@ -16,115 +16,110 @@ struct PopoverView: View {
     var body: some View {
         TimelineView(.periodic(from: Date(), by: 60)) { context in
             content(now: context.date)
-                .frame(width: 316)
+                .frame(width: 276)
                 .background(.regularMaterial)
         }
     }
 
     private func content(now: Date) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(spacing: 0) {
             header
 
-            hero(now: now)
+            Divider()
+
+            summary(now: now)
+
+            Divider()
 
             creditList(now: now)
 
+            Divider()
+
             footer
         }
-        .padding(12)
+        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+        .overlay {
+            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                .strokeBorder(.white.opacity(0.12))
+        }
     }
 
     private var header: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: 7) {
             Image(systemName: "arrow.clockwise.circle.fill")
-                .font(.system(size: 15, weight: .semibold))
-                .foregroundStyle(.tint)
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundStyle(.secondary)
 
-            VStack(alignment: .leading, spacing: 1) {
-                Text("Codex resets")
-                    .font(.system(size: 13, weight: .semibold))
-                Text(lastUpdatedText)
-                    .font(.system(size: 10))
-                    .foregroundStyle(.secondary)
-            }
+            Text("Codex resets")
+                .font(.system(size: 12, weight: .semibold))
 
             Spacer()
 
             if store.isLoading {
                 ProgressView()
-                    .controlSize(.small)
-            }
-        }
-    }
-
-    private func hero(now: Date) -> some View {
-        let snapshot = store.currentSnapshot
-        let credits = snapshot?.availableCredits ?? []
-        let nextExpiration = snapshot?.nextExpiringCredit?.expiresAt
-        let heroTone = nextExpiration.map { tone(for: $0, now: now) } ?? StatusPill.Tone.neutral
-
-        return HStack(alignment: .center, spacing: 10) {
-            VStack(alignment: .leading, spacing: 2) {
-                Text("\(credits.count)")
-                    .font(.system(size: 38, weight: .bold, design: .rounded))
-                    .monospacedDigit()
-                    .foregroundStyle(heroTone == .neutral ? Color.primary : heroTone.color)
-                Text(credits.count == 1 ? "available reset credit" : "available reset credits")
-                    .font(.system(size: 12, weight: .medium))
+                    .controlSize(.mini)
+            } else {
+                Text(lastUpdatedText)
+                    .font(.system(size: 9, weight: .medium))
                     .foregroundStyle(.secondary)
             }
-            .layoutPriority(1)
+        }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 8)
+    }
 
-            Spacer()
+    private func summary(now: Date) -> some View {
+        let credits = store.currentSnapshot?.availableCredits ?? []
+        let nextExpiration = store.currentSnapshot?.nextExpiringCredit?.expiresAt
+        let summaryTone = nextExpiration.map { tone(for: $0, now: now) } ?? StatusPill.Tone.neutral
+
+        return HStack(spacing: 8) {
+            Text("\(credits.count)")
+                .font(.system(size: 28, weight: .bold, design: .rounded))
+                .monospacedDigit()
+                .foregroundStyle(summaryTone == .neutral ? Color.primary : summaryTone.color)
+
+            Text(credits.count == 1 ? "reset available" : "resets available")
+                .font(.system(size: 11, weight: .medium))
+                .foregroundStyle(.secondary)
+
+            Spacer(minLength: 8)
 
             if let nextExpiration {
                 StatusPill(
-                    text: "expires in \(countdownFormatter.string(from: now, to: nextExpiration))",
-                    systemImage: "timer",
-                    tone: tone(for: nextExpiration, now: now)
+                    text: countdownFormatter.string(from: now, to: nextExpiration),
+                    systemImage: "clock",
+                    tone: summaryTone
                 )
-            } else {
-                StatusPill(text: "no resets", systemImage: "minus.circle", tone: .neutral)
             }
         }
-        .padding(12)
-        .background {
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .fill(.thinMaterial)
-                .overlay(alignment: .topLeading) {
-                    RoundedRectangle(cornerRadius: 14, style: .continuous)
-                        .fill(heroAccent.opacity(0.11))
-                        .frame(height: 42)
-                        .blur(radius: 8)
-                        .clipped()
-                }
-                .overlay {
-                    RoundedRectangle(cornerRadius: 14, style: .continuous)
-                        .strokeBorder(heroAccent.opacity(0.18))
-                }
-        }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 8)
+        .background(summaryTone.color.opacity(0.055))
     }
 
     @ViewBuilder
     private func creditList(now: Date) -> some View {
         if let failure = failureText {
             Text(failure)
-                .font(.system(size: 11, weight: .medium))
+                .font(.system(size: 10, weight: .medium))
                 .foregroundStyle(.secondary)
+                .lineLimit(2)
                 .padding(10)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .background {
-                    RoundedRectangle(cornerRadius: 10, style: .continuous)
-                        .fill(.red.opacity(0.09))
-                }
         }
 
-        let credits = sortedCredits
+        let credits = listedCredits
         if credits.isEmpty {
             emptyState
         } else {
-            VStack(spacing: 6) {
-                ForEach(credits) { credit in
+            VStack(spacing: 0) {
+                ForEach(Array(credits.enumerated()), id: \.element.id) { index, credit in
+                    if index > 0 {
+                        Divider()
+                            .padding(.leading, 34)
+                    }
+
                     ResetCreditRowView(credit: credit, now: now)
                 }
             }
@@ -132,56 +127,56 @@ struct PopoverView: View {
     }
 
     private var emptyState: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: 7) {
             Image(systemName: "circle.dashed")
                 .foregroundStyle(.secondary)
-            Text("No reset credits available")
-                .font(.system(size: 12, weight: .medium))
+            Text("No reset credits")
+                .font(.system(size: 11, weight: .medium))
                 .foregroundStyle(.secondary)
             Spacer()
         }
-        .padding(10)
-        .background {
-            RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .fill(.quaternary.opacity(0.4))
-        }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 9)
     }
 
     private var footer: some View {
-        HStack(spacing: 6) {
+        HStack(spacing: 10) {
             Button(action: actions.refresh) {
-                Label("Refresh", systemImage: "arrow.clockwise")
+                Image(systemName: "arrow.clockwise")
             }
-            .buttonStyle(.bordered)
             .disabled(store.isLoading)
+            .help("Refresh")
 
             Button(action: actions.openCodex) {
-                Label("Open", systemImage: "arrow.up.right")
+                Image(systemName: "arrow.up.right")
             }
-            .buttonStyle(.bordered)
+            .help("Open Codex")
 
             Spacer()
 
             Button(action: actions.hide) {
                 Image(systemName: "eye.slash")
             }
-            .buttonStyle(.borderless)
             .help("Hide")
 
             Button(action: actions.quit) {
                 Image(systemName: "power")
             }
-            .buttonStyle(.borderless)
             .help("Quit")
         }
-        .controlSize(.small)
+        .buttonStyle(.borderless)
+        .controlSize(.mini)
+        .font(.system(size: 11, weight: .semibold))
+        .foregroundStyle(.secondary)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 7)
     }
 
     private var lastUpdatedText: String {
         guard let snapshot = store.currentSnapshot else {
-            return store.isLoading ? "refreshing" : "not refreshed yet"
+            return "not updated"
         }
-        return "updated \(DateFormatters.localDateString(for: snapshot.fetchedAt))"
+        return DateFormatters.localDateString(for: snapshot.fetchedAt)
     }
 
     private var failureText: String? {
@@ -189,13 +184,6 @@ struct PopoverView: View {
             return message
         }
         return nil
-    }
-
-    private var heroAccent: Color {
-        guard let expiration = store.currentSnapshot?.nextExpiringCredit?.expiresAt else {
-            return .secondary
-        }
-        return tone(for: expiration, now: Date()).color
     }
 
     private func tone(for expiration: Date, now: Date) -> StatusPill.Tone {
@@ -209,14 +197,7 @@ struct PopoverView: View {
         return .calm
     }
 
-    private var sortedCredits: [ResetCredit] {
-        (store.currentSnapshot?.credits ?? [])
-            .sorted { lhs, rhs in
-                if lhs.isAvailable != rhs.isAvailable {
-                    return lhs.isAvailable && !rhs.isAvailable
-                }
-
-                return lhs.expiresAt < rhs.expiresAt
-            }
+    private var listedCredits: [ResetCredit] {
+        store.currentSnapshot?.availableCredits ?? []
     }
 }
